@@ -1,0 +1,28 @@
+{
+  "name": "golden-layout-component",
+  "version": "0.1.0",
+  "description": "A wrapping of the golden-layout library. See https://www.golden-layout.com/",
+  "keywords": [
+    "web-components",
+    "polymer",
+    "Golden Layout"
+  ],
+  "authors": [
+    "Rémi Casado"
+  ],
+  "repository": {
+   "type": "git",
+   "url": "https://github.com/Yepikae/golden-layout-component.git"
+  },
+  "main": "golden-layout-component.html",
+  "license": "https://github.com/Yepikae/golden-layout-component/LICENSE",
+  "dependencies": {
+    "polymer": "polymer/polymer#^1.0.0",
+    "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior"
+  },
+  "devDependencies": {
+    "iron-component-page": "polymerelements/iron-component-page#^1.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "ignore": []
+}

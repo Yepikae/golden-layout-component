@@ -1,0 +1,156 @@
+<!-- TODO Try to get rid of this... -->
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+<!-- Golden-layout main script, minus some modificatin to make it work with Polymer -->
+<script type="text/javascript" src="lib/golden-layout-for-polymer.js"></script>
+<!-- golden layout main style -->
+<link rel="import" href="css/golden-layout-component-style.html">
+<!-- Golden layout theme -->
+<link rel="import" href="css/golden-layout-component-light-theme.html">
+<!-- For resizing the layout -->
+<link rel="import" href="../../bower_components/iron-resizable-behavior/iron-resizable-behavior.html">
+<!-- Enough with the dependencies -->
+<dom-module id="golden-layout-component">
+  <template>
+    <style include="golden-layout-component-style"></style>
+    <style include="golden-layout-component-light-theme"></style>
+    <style>
+      :host {
+        display: block;
+        overflow: hidden;
+      }
+      :host #metacontainer {
+        overflow: hidden;
+        width: 100%;
+        height: 100%;
+      }
+      :host #container {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+    <div id="metacontainer">
+      <div id="container"></div>
+    </div>
+  </template>
+  <script>
+    Polymer({
+      is: 'golden-layout-component',
+
+      /**
+       * Fired when a component of the layout is closed.
+       * Returns the name of the component.
+       *
+       * @event itemDestroyed
+       */
+
+      behaviors: [Polymer.IronResizableBehavior],
+
+      properties: {
+
+        /**
+         * The GoldenLayout main object.
+         *
+         * @attribute _layout
+         * @type GoldenLayout
+         */
+        _layout: {
+          type: Object,
+          notify: true
+        }
+      },
+
+      attached: function() {
+        // Layout configuration
+        var config = {
+          settings: {
+            hasHeaders: true,
+            constrainDragToContainer: true,
+            reorderEnabled: true,
+            selectionEnabled: true,
+            popoutWholeStack: false,
+            blockedPopoutsThrowError: true,
+            closePopoutsOnUnload: true,
+            showPopoutIcon: false,
+            showMaximiseIcon: true,
+            showCloseIcon: true
+          },
+          content: []
+        };
+        // Create the layout
+        this.set('_layout', new GoldenLayout(config, this.$.container, this.$.metacontainer));
+        // Initialize the layout
+        this._layout.init();
+        // Fires `itemDestroyed` when a component is closed.
+        this._layout.on('itemDestroyed', function(evt) {
+          if (evt.type === "component") {
+            this.fire('itemDestroyed', {
+              itemName: evt.componentName
+            });
+          }
+        }.bind(this));
+        // Listen to resize event on the golden-layout-component
+        this.addEventListener('iron-resize', function() {
+          this._layout.updateSize(this.$.container.offsetWidth, this.$.container.offsetHeight);
+        }.bind(this));
+      },
+
+      /**
+       * Add a new component to the layout.
+       *
+       * @param {!required} name {String} Name of the component. Should be UNIQUE.
+       *
+       * @param {!required} component {Object} The DOM object of the component to add.
+       *
+       * @method registerComponent
+       */
+      registerComponent: function(name, component) {
+        // Create new golden-layout config.
+        var newItemConfig = {
+          type: 'component',
+          componentName: name,
+          componentState: {}
+        };
+        // Register the new component.
+        try {
+          this._layout.registerComponent(name, function(container, componentState) {
+            container.getElement().html(component);
+          });
+        } catch (e) {}
+        // Add the new component.
+        try {
+          this._layout.root.contentItems[0].addChild(newItemConfig);
+        } catch (e) {
+          this._layout.root.addChild(newItemConfig);
+        }
+      },
+
+      /**
+       * Add a list of new component to the layout.
+       *
+       * @param {!required} list {Array} List of component. Must be an array of objects {UNIQUE_NAME_OF_A_COMPONENT, DOM_OBJECT_OF_THE_COMPONENT}.
+       *
+       * @param {!required} config {Object} Arrangement of the components. (see golden-layout doc).
+       *
+       * @method registerComponent
+       */
+      registerComponents: function(list, config) {
+        // Returns a component initialization function.
+        function _createfunc(domObj) {
+          return function(container, componentState) {
+            container.getElement().html(domObj);
+          };
+        }
+        // Registers each component.
+        for (var _name in list) {
+          this._layout.registerComponent(_name, _createfunc(list[_name]));
+        }
+        // Add the components.
+        try {
+          this._layout.root.contentItems[0].addChild(config);
+        } catch (e) {
+          this._layout.root.addChild(config);
+        }
+      }
+    });
+  </script>
+</dom-module>
